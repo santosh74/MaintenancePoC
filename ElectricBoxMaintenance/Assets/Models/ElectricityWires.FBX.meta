@@ -1,0 +1,140 @@
+fileFormatVersion: 2
+guid: 1e2858f10a9f5d04d8aac53e503a7879
+timeCreated: 1532948719
+licenseType: Free
+ModelImporter:
+  serializedVersion: 22
+  fileIDToRecycleName:
+    100000: BlueWire1
+    100002: BlueWire2
+    100004: BlueWire3
+    100006: BlueWire4
+    100008: BlueWire5
+    100010: BrownWire1
+    100012: BrownWire2
+    100014: BrownWire3
+    100016: BrownWire4
+    100018: BrownWire5
+    100020: //RootNode
+    400000: BlueWire1
+    400002: BlueWire2
+    400004: BlueWire3
+    400006: BlueWire4
+    400008: BlueWire5
+    400010: BrownWire1
+    400012: BrownWire2
+    400014: BrownWire3
+    400016: BrownWire4
+    400018: BrownWire5
+    400020: //RootNode
+    2100000: 'Material #91'
+    2300000: BlueWire1
+    2300002: BlueWire2
+    2300004: BlueWire3
+    2300006: BlueWire4
+    2300008: BlueWire5
+    2300010: BrownWire1
+    2300012: BrownWire2
+    2300014: BrownWire3
+    2300016: BrownWire4
+    2300018: BrownWire5
+    3300000: BlueWire1
+    3300002: BlueWire2
+    3300004: BlueWire3
+    3300006: BlueWire4
+    3300008: BlueWire5
+    3300010: BrownWire1
+    3300012: BrownWire2
+    3300014: BrownWire3
+    3300016: BrownWire4
+    3300018: BrownWire5
+    4300000: BlueWire1
+    4300002: BlueWire2
+    4300004: BlueWire3
+    4300006: BlueWire4
+    4300008: BlueWire5
+    4300010: BrownWire1
+    4300012: BrownWire2
+    4300014: BrownWire3
+    4300016: BrownWire4
+    4300018: BrownWire5
+  externalObjects: {}
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 1
+    importLights: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    preserveHierarchy: 0
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    serializedVersion: 2
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
