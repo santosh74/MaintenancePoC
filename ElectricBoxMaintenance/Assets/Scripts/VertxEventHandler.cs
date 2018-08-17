@@ -142,6 +142,7 @@ public class VertxEventHandler : MonoBehaviour
         }
         else
         {
+
             PreviousAnimationNode = CreateNode("MAINTANENCE_MODEL", "b7617179-cf1f-45b1-90be-e6d05369de7a");
         } 
     }
@@ -197,9 +198,13 @@ public class VertxEventHandler : MonoBehaviour
 
         StartCoroutine(PlayInitialVoiceOver());
         Debug.Log("Init key animation :");
-        currentGameObject = CreateNode("KEY_ANIMATION", "353f92d5-3f34-4bde-859e-f6bda4c51d0d");
-        currentGameObject.AddComponent<AnimEventHandler>();
-        PreviousAnimationNode = currentGameObject;
+        if (!SceneLink.Instance.transform.Find("KEY_ANIMATION"))
+        {
+            currentGameObject = CreateNode("KEY_ANIMATION", "353f92d5-3f34-4bde-859e-f6bda4c51d0d");
+            currentGameObject.AddComponent<AnimEventHandler>();
+            PreviousAnimationNode = currentGameObject;
+        }
+
         currentStep = 0;
     }
 
@@ -220,30 +225,37 @@ public class VertxEventHandler : MonoBehaviour
     // Method to create and return Vertex Node Link Game object 
     private GameObject CreateNode(string name, string id)
     {
-        GameObject box = GameObject.FindGameObjectWithTag("Box");
-        var vertxObject = SceneLink.Instance.transform.Find(name);
         GameObject vertxThing;
-        if (vertxObject == null)
+        if (!SceneLink.Instance.transform.Find(name))
         {
-            vertxThing = SceneLink.Instance.CreateNode(name,
-                box.transform.position,
-                box.transform.rotation,
-                Vector3.one,
-                id
-           );
+            GameObject box = GameObject.FindGameObjectWithTag("Box");
+            var vertxObject = SceneLink.Instance.transform.Find(name);
+           
+            if (vertxObject == null)
+            {
+                vertxThing = SceneLink.Instance.CreateNode(name,
+                    box.transform.position,
+                    box.transform.rotation,
+                    Vector3.one,
+                    id
+               );
+            }
+            else
+            {
+                vertxThing = vertxObject.gameObject;
+                Debug.Log("node already exists");
+
+            }
+            currentGameObject = vertxThing;
+            currentGameObject.AddComponent<AnimEventHandler>();
+            PreviousAnimationNode = SceneLink.Instance.transform.Find(name).gameObject;
+            return vertxThing;
         }
         else
         {
-            vertxThing = vertxObject.gameObject;
-            Debug.Log("node already exists");
-
+            return null;
         }
-        currentGameObject = vertxThing;
-        currentGameObject.AddComponent<AnimEventHandler>();
-        PreviousAnimationNode = SceneLink.Instance.transform.Find(name).gameObject;
-        return vertxThing;
 
     }
-
 
 }

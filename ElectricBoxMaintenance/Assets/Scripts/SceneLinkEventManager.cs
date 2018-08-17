@@ -24,7 +24,7 @@ public class SceneLinkEventManager : MonoBehaviour
 
     IEnumerator AttachManagers()
     {
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(1f);
         LoadVertxEventManager();
         LoadLiveInformationManager();
     }
@@ -180,6 +180,7 @@ public class SceneLinkEventManager : MonoBehaviour
                 Destroy(a.gameObject);
             }
         }
+        
     }
 
     public void LoadVertxEventManager()
@@ -193,6 +194,12 @@ public class SceneLinkEventManager : MonoBehaviour
     {
         GameObject VERTXobjectDecompositionHandlerNode = CreateNode("VertxObjectDecompositionHandler", null);
         VERTXobjectDecompositionHandlerNode.AddComponent<ObjectDecompositionManager>();
+    }
+
+    void LoadMessengerNode()
+    {
+        GameObject MessageHandler = CreateNode("VertxMessageHandler", null);
+        MessageHandler.AddComponent<VertxMessageHandler>();
     }
 
 }

@@ -29,7 +29,7 @@ public class SwitchAndConnectorColliderRemoval : MonoBehaviour
         }
     }
 
-    void RecurrsiveDownwards(GameObject gameObject)
+   public void RecurrsiveDownwards(GameObject gameObject)
     {
         for (int i = 0; i < gameObject.transform.childCount; i++)
         {

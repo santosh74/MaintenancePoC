@@ -10,16 +10,20 @@ public class Player : VertexSingleton<Player>
     public FloatingButton StartButton;
     public FloatingButton Reset;
     public FloatingButton ValidateButton;
+    public FloatingButton DisableClippingButton;
     public GameObject Camera;
     public GameObject MainBox;
     public GameObject BoundingBox;
     public GameObject SpatialUnderstanding;
     public GameObject sceneLink;
     public GameObject SpatialMapping;
+    public GameObject RemoteAssistance;
+    
     bool boxStatus = true;
     bool inDecomp = false;
     // panels for live information
     GameObject ComponentWindowPanel;
+    NodeLink CurrentNodeLink;
 
 
 
@@ -36,15 +40,67 @@ public class Player : VertexSingleton<Player>
         StartButton.Clicked += Start_Clicked;
         Reset.Clicked += Reset_Clicked;
         ValidateButton.Clicked += Validate_Clicked;
+        DisableClippingButton.Clicked += DisableClippingButton_Clicked;
+
 
         if (homeButton.isActiveAndEnabled)
         {
             homeButton.setActiveStatus(false);
         }
+        if (RemoteAssistance)
+        {
+            RemoteAssistance.SetActive(false);
+        }
 
         SceneLink.Instance.OnStateChange += SceneLink_OnStateChange;
 
-        
+       
+    }
+    void RemoveBoxCollider(GameObject selectedObject)
+    {
+        if (selectedObject.GetComponent<BoxCollider>())
+        {
+            Destroy(selectedObject.GetComponent<BoxCollider>());
+        }
+    }
+
+    public void RecurrsiveDownwards(GameObject gameObject)
+    {
+        for (int i = 0; i < gameObject.transform.childCount; i++)
+        {
+            GameObject childObject = gameObject.transform.GetChild(i).gameObject;
+            Debug.Log(childObject.name);
+            if (childObject.name == "Primitive")
+            {
+                Debug.Log("SPARTAAAAAAAA" + childObject.name);
+                RemoveBoxCollider(childObject);
+            }
+            else
+            {
+                RecurrsiveDownwards(childObject);
+            }
+        }
+
+
+    }
+
+
+    public void DisableSnapping()
+    {
+        foreach (NodeLink a in SceneLink.Instance.GetComponentsInChildren<NodeLink>())
+        {
+            if (a.name.Contains("SWITCH") || a.name.Contains("CONNECTOR"))
+            {
+                a.GetComponent<BoxCollider>().enabled = false;
+                RecurrsiveDownwards(a.gameObject);
+            }
+
+        }
+    }
+
+    public void DisableClippingButton_Clicked(GameObject button)
+    {
+        SceneLink.Instance.GetComponentInChildren<NodeLink>().Fire("DisableClipping", button.name);
     }
 
     // On scene connect, Handler is set up
@@ -55,8 +111,30 @@ public class Player : VertexSingleton<Player>
         {
             Debug.Log("SceneLink_OnStateChange - VERTX connected : ");
             StartCoroutine(ResetVertxEventHandler());
+            // StartCoroutine(GetMessageHandler());
+            StartCoroutine(SaveScene());
         }
 
+    }
+
+    IEnumerator GetMessageHandler()
+    {
+        yield return new WaitForSeconds(10f);
+
+        GameObject messageObj = SceneLink.Instance.transform.Find("VertxMessageHandler").gameObject;
+        if (messageObj)
+        {
+            CurrentNodeLink = messageObj.GetComponent<NodeLink>();
+        }
+        //CurrentNodeLink = SceneLink.Instance.transform.Find("VertxMessageHandler").GetComponent<NodeLink>();
+        if (CurrentNodeLink)
+        {
+            Debug.Log("Messanger found");
+        }
+        else
+        {
+            Debug.Log("Messanger node not found");
+        }
     }
 
     public void Validate_Clicked(GameObject button)
@@ -78,6 +156,7 @@ public class Player : VertexSingleton<Player>
         Camera.GetComponent<RaycastPositioningV1>().enabled = false;
 
         //LocationManager.Instance.BeginLocationSync();
+        //CurrentNodeLink = SceneLink.Instance.transform.Find("VertxMessageHandler").GetComponent<NodeLink>();
     }
     // Reset button click handler
     public void Reset_Clicked(GameObject button)
@@ -97,14 +176,44 @@ public class Player : VertexSingleton<Player>
     // HomeButton click event handler
     private void HomeButton_Clicked(GameObject button)
     {
-        if(SceneLink.Instance.transform.GetComponentInChildren<CreateWires>())
+        SceneLink.Instance.GetComponentInChildren<NodeLink>().Fire("ButtonEventHandler", button.name);
+    }
+
+    IEnumerator GoToHome()
+    {
+        //WholeBox.GetComponent<ObjectDecomposition>().MoveObjectsBackwards();
+        SceneLink.Instance.GetComponentInChildren<ObjectDecompositionManager>().VertxComposition();
+        yield return new WaitForSeconds(1.5f);
+
+        if (boxStatus)
+        {
+            boxStatus = false;
+            //MainBoxDoor.SetActive(true);
+            //MainBoxPanel.SetActive(true);
+        }
+        windowManager.SetActive(false);
+        mainMenuContainer.SetActiveStatus(true);
+        // Hide home button
+        //WholeBox.SetActive(false);
+        Reset.setActiveStatus(true);
+
+        SetVertxEventHandlerState(false);
+        inDecomp = false;
+        //sceneLink.GetComponent<SwitchAndConnectorNode>().enabled = true;
+        SceneLink.Instance.GetComponentInChildren<ObjectDecompositionManager>().RemoveBox();
+    }
+
+   
+    public void GoingHome()
+    {
+        if (SceneLink.Instance.transform.GetComponentInChildren<CreateWires>())
         {
             SceneLink.Instance.transform.GetComponentInChildren<CreateWires>().ResetWireConnections();
             Debug.Log("Values reset");
         }
-
-        button.SetActive(false);
-        if(inDecomp)
+        RemoteAssistance.SetActive(false);
+        homeButton.setActiveStatus(false);
+        if (inDecomp)
         {
             StartCoroutine(GoToHome());
             windowManager.GetComponent<FadeIn>().FadeOut();
@@ -133,91 +242,148 @@ public class Player : VertexSingleton<Player>
 
 
             ValidateButton.setActiveStatus(false);
+            DisableClippingButton.setActiveStatus(false);
+            StartCoroutine(ResetVertxEventHandler());
         }
 
     }
 
-    IEnumerator GoToHome()
+    public void LiveInfo()
     {
-        //WholeBox.GetComponent<ObjectDecomposition>().MoveObjectsBackwards();
-        SceneLink.Instance.GetComponentInChildren<ObjectDecompositionManager>().VertxComposition();
-        yield return new WaitForSeconds(1.5f);
 
-        if (boxStatus)
-        {
-            boxStatus = false;
-            //MainBoxDoor.SetActive(true);
-            //MainBoxPanel.SetActive(true);
-        }
-        windowManager.SetActive(false);
-        mainMenuContainer.SetActiveStatus(true);
-        // Hide home button
+        //WholeBox.SetActive(true);
+        mainMenuContainer.SetActiveStatus(false);
+        windowManager.SetActive(true);
+        homeButton.setActiveStatus(true);
+        Reset.setActiveStatus(false);
+        BoundingBox.SetActive(false);
+
+        boxStatus = true;
+        //MainBoxDoor.SetActive(false);
+        //MainBoxPanel.SetActive(false);
+
+        //WholeBox.GetComponent<ObjectDecomposition>().MoveObjectsForwards();
+        inDecomp = true;
+        windowManager.GetComponent<FadeIn>().Fade();
+        //
+        SceneLink.Instance.GetComponentInChildren<ObjectDecompositionManager>().VertxDecomposeStart();
+        //
+        // Set the default values to component panel
+
+        ComponentWindow.Instance.SetPanelText("Tap on components", "to display more information", "");
+        ComponentWindow.Instance.SetColourPanel(ComponentWindowPanel);
+    }
+
+    public void InteractiveGuide()
+    {
+
         //WholeBox.SetActive(false);
-        Reset.setActiveStatus(true);
+        //LoadKeyAnimation();
+        mainMenuContainer.SetActiveStatus(false);
+        windowManager.SetActive(false);
+        Reset.setActiveStatus(false);
+        homeButton.setActiveStatus(true);
+    }
 
-        SetVertxEventHandlerState(false);
-        inDecomp = false;
-        //sceneLink.GetComponent<SwitchAndConnectorNode>().enabled = true;
-        SceneLink.Instance.GetComponentInChildren<ObjectDecompositionManager>().RemoveBox();
+    public void Collaboration()
+    {
+        StartCoroutine(EnableIoTListeners(false));
+        //WholeBox.SetActive(false);
+        mainMenuContainer.SetActiveStatus(false);
+        windowManager.SetActive(false);
+        Reset.setActiveStatus(false);
+        homeButton.setActiveStatus(true);
+        StartCoroutine(StartCollaberation());
+    }
+
+    public void Remote()
+    {
+        RemoteAssistance.SetActive(true);
+        mainMenuContainer.SetActiveStatus(false);
+        windowManager.SetActive(false);
+        homeButton.setActiveStatus(true);
+        Reset.setActiveStatus(false);
     }
 
     // Menu container button click event handler
     private void OnButtonClicked(GameObject button)
     {
 
-        if (button.name == "LiveInformation")
+        if(button.name == "InteractiveGuide")
         {
-            
-
-
-            //WholeBox.SetActive(true);
-            mainMenuContainer.SetActiveStatus(false);
-            windowManager.SetActive(true);
-            homeButton.setActiveStatus(true);
-            Reset.setActiveStatus(false);
-            BoundingBox.SetActive(false);
-
-            boxStatus = true;
-            //MainBoxDoor.SetActive(false);
-            //MainBoxPanel.SetActive(false);
-
-            //WholeBox.GetComponent<ObjectDecomposition>().MoveObjectsForwards();
-            inDecomp = true;
-            windowManager.GetComponent<FadeIn>().Fade();
-            //
-            SceneLink.Instance.GetComponentInChildren<ObjectDecompositionManager>().VertxDecomposeStart();
-            //
-            // Set the default values to component panel
-
-            ComponentWindow.Instance.SetPanelText("Tap on components", "to display more information", "");
-            ComponentWindow.Instance.SetColourPanel(ComponentWindowPanel);
-        }
-        else if (button.name == "InteractiveGuide")
-        {
-            //WholeBox.SetActive(false);
             LoadKeyAnimation();
-            mainMenuContainer.SetActiveStatus(false);
-            windowManager.SetActive(false);
-            Reset.setActiveStatus(false);
-            homeButton.setActiveStatus(true);
-            
+            StartCoroutine(FireMessage(button));
         }
-        else if(button.name == "Collab")
+        else
         {
-
-
-            StartCoroutine(EnableIoTListeners(false));
-            //WholeBox.SetActive(false);
-            mainMenuContainer.SetActiveStatus(false);
-            windowManager.SetActive(false);
-            Reset.setActiveStatus(false);
-            homeButton.setActiveStatus(true);
-            StartCoroutine(StartCollaberation());
-
-
-            
+            SceneLink.Instance.GetComponentInChildren<NodeLink>().Fire("ButtonEventHandler", button.name);
         }
+        
     }
+
+    IEnumerator FireMessage(GameObject button)
+    {
+        yield return new WaitForSeconds(1f);
+        SceneLink.Instance.GetComponentInChildren<NodeLink>().Fire("ButtonEventHandler", button.name);
+    }
+
+    //private void ButtonEventHandler(string button)
+    //{
+    //    if (button == "LiveInformation")
+    //    {
+    //        //WholeBox.SetActive(true);
+    //        mainMenuContainer.SetActiveStatus(false);
+    //        windowManager.SetActive(true);
+    //        homeButton.setActiveStatus(true);
+    //        Reset.setActiveStatus(false);
+    //        BoundingBox.SetActive(false);
+
+    //        boxStatus = true;
+    //        //MainBoxDoor.SetActive(false);
+    //        //MainBoxPanel.SetActive(false);
+
+    //        //WholeBox.GetComponent<ObjectDecomposition>().MoveObjectsForwards();
+    //        inDecomp = true;
+    //        windowManager.GetComponent<FadeIn>().Fade();
+    //        //
+    //        SceneLink.Instance.GetComponentInChildren<ObjectDecompositionManager>().VertxDecomposeStart();
+    //        //
+    //        // Set the default values to component panel
+
+    //        ComponentWindow.Instance.SetPanelText("Tap on components", "to display more information", "");
+    //        ComponentWindow.Instance.SetColourPanel(ComponentWindowPanel);
+    //    }
+    //    else if (button == "InteractiveGuide")
+    //    {
+    //        //WholeBox.SetActive(false);
+    //        LoadKeyAnimation();
+    //        mainMenuContainer.SetActiveStatus(false);
+    //        windowManager.SetActive(false);
+    //        Reset.setActiveStatus(false);
+    //        homeButton.setActiveStatus(true);
+
+    //    }
+    //    else if (button == "Collab")
+    //    {
+
+
+    //        StartCoroutine(EnableIoTListeners(false));
+    //        //WholeBox.SetActive(false);
+    //        mainMenuContainer.SetActiveStatus(false);
+    //        windowManager.SetActive(false);
+    //        Reset.setActiveStatus(false);
+    //        homeButton.setActiveStatus(true);
+    //        StartCoroutine(StartCollaberation());
+    //    }
+    //    else if (button == "RemoteAssistance")
+    //    {
+    //        RemoteAssistance.SetActive(true);
+    //        mainMenuContainer.SetActiveStatus(false);
+    //        windowManager.SetActive(false);
+    //        homeButton.setActiveStatus(true);
+    //        Reset.setActiveStatus(false);
+    //    }
+    //}
 
     // Coroutine to start loading assets from vertx
 
@@ -233,6 +399,7 @@ public class Player : VertexSingleton<Player>
         MainBox.GetComponent<BoxCollider>().enabled = false;
 
         ValidateButton.setActiveStatus(true);
+        DisableClippingButton.setActiveStatus(true);
     }
 
     // Coroutine to load first key animation
@@ -262,18 +429,24 @@ public class Player : VertexSingleton<Player>
     // Coroutine to reset the vertx event manager
     IEnumerator ResetVertxEventHandler()
     {
+        yield return new WaitForSeconds(0.5f);
         EnableIoTListeners(false);
         foreach (NodeLink a in SceneLink.Instance.GetComponentsInChildren<NodeLink>())
         {
-            if(a.name != "VertxEventManager")
+            if(!(a.name == "VertxEventManager" || a.name == "VertxObjectDecompositionHandler"))
             {
                 Debug.Log("Destroying object :" + a.name);
                 Destroy(a.gameObject);
-               
             }
 
         }
-        yield return null;
+    }
+
+    public IEnumerator SaveScene()
+    {
+        UnityEngine.Networking.UnityWebRequest webRequest = UnityEngine.Networking.UnityWebRequest.Get(VertexAuthentication.Instance.ServiceUrl + "/session/scene/save/" + SceneLink.Instance.SceneId);
+        webRequest.AddVertexAuth();
+        yield return webRequest.SendWebRequest();
     }
 
 
@@ -294,8 +467,11 @@ public class Player : VertexSingleton<Player>
                 {
                     Destroy(x.gameObject);
                 }
+
             }
         }
+        StartCoroutine(SaveScene());
+
     }
 
     IEnumerator EnableIoTListeners(bool isEnabled)
@@ -317,7 +493,7 @@ public class Player : VertexSingleton<Player>
     // Update is called once per frame
     void Update()
     {
-
+       
     }
 
 
@@ -358,6 +534,9 @@ public class Player : VertexSingleton<Player>
 
        // LocationManager.Instance.CurrentState
     }
+
+
+    
 
 
 }
